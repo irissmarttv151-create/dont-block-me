@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Don't Block Me</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(180deg, #d6efff 0%, #e8f4fc 50%, #f4f8fb 100%);
+            color: #4a4a4a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        /* --- Loading Screen Styles --- */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #d6efff 0%, #e8f4fc 50%, #f4f8fb 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        .loading-logo {
+            max-width: 250px;
+            width: 80%;
+            height: auto;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+        .loading-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .loading-sub {
+            font-size: 0.95rem;
+            color: #7b85a0;
+            margin-bottom: 25px;
+        }
+        
+        /* Bouncing Dots Animation */
+        .dots-container {
+            display: flex;
+            gap: 8px;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: bounce 1.2s infinite ease-in-out both;
+        }
+        .dot:nth-child(1) { background-color: #ff769c; animation-delay: -0.32s; }
+        .dot:nth-child(2) { background-color: #70d6ff; animation-delay: -0.16s; }
+        .dot:nth-child(3) { background-color: #3a86ff; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* --- Main App Styles (Hidden initially) --- */
+        #main-app {
+            display: none;
+            max-width: 400px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            overflow: visible;
+            position: relative;
+            padding: 20px;
+            text-align: center;
+            border: 4px solid #ffffff;
+        }
+
+        .header-bg {
+            background: linear-gradient(180deg, #c3e7ff 0%, #e2f2ff 100%);
+            border-radius: 20px;
+            padding: 20px 15px;
+            position: relative;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .main-logo {
+            max-width: 210px;
+            width: 100%;
+            height: auto;
+            margin-bottom: 5px;
+        }
+        .sub-tag {
+            display: inline-block;
+            background: #ffffff;
+            padding: 4px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #7b85a0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .lang-bar {
+            background: #ffffff;
+            border: 2px solid #ffb6c1;
+            border-radius: 25px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+        }
+        .lang-arrow {
+            background: #ff477e;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        .main-card {
+            background: #ffffff;
+            border: 2px dashed #ffb6c1;
+            border-radius: 24px;
+            padding: 20px 15px;
+            margin-bottom: 25px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(255, 182, 193, 0.2);
+        }
+        .bears-illustration {
+            width: 160px;
+            height: auto;
+            margin: 0 auto 10px auto;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+        .floating-heart-top {
+            position: absolute;
+            top: -15px;
+            right: -10px;
+            background: #ff5c8d;
+            color: white;
+            width: 35px;
+            height: 30px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(45deg);
+            box-shadow: 0 3px 10px rgba(255, 92, 141, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+        .floating-heart-top::after {
+            content: '❤️';
+            font-size: 0.9rem;
+            transform: rotate(-45deg);
+        }
+        .flower-left {
+            position: absolute;
+            bottom: 80px;
+            left: -10px;
+            font-size: 1.5rem;
+        }
+        .strawberry-left {
+            position: absolute;
+            bottom: 30px;
+            left: -12px;
+            font-size: 1.5rem;
+        }
+        .cloud-badge {
+            position: absolute;
+            bottom: -20px;
+            left: -15px;
+            background: #e1f3ff;
+            border: 2px solid #ffffff;
+            border-radius: 30px;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0, 153, 255, 0.2);
+            z-index: 10;
+        }
+        .cloud-badge span { font-size: 1.2rem; }
+        .cloud-face { font-size: 0.85rem; font-weight: bold; color: #2b7acc; }
+
+        .card-heading {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .card-heading span {
+            color: #ff5c8d;
+            background: #fff3f5;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+        .divider-line {
+            color: #ffb6c1;
+            font-size: 1rem;
+            margin: 8px 0 15px 0;
+            letter-spacing: 4px;
+        }
+        .btn-create {
+            background: linear-gradient(90deg, #0099ff, #00c6ff);
+            color: #ffffff;
+            border: none;
+            padding: 14px 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 153, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-arrow-icon {
+            background: rgba(255, 255, 255, 0.2);
+            width: 26px;
+            height: 26px,
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        .how-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            text-align: right;
+        }
+        .how-subtitle {
+            font-size: 0.75rem;
+            color: #ff5c8d;
+            text-align: right;
+            margin-bottom: 12px;
+        }
+        .step-item {
+            display: flex;
+            align-items: center;
+            background: #f8fbff;
+            border: 1px solid #e1ecf7;
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 10px;
+            text-align: right;
+            gap: 12px;
+        }
+        .step-icon {
+            font-size: 1.5rem;
+            background: #fff;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            flex-shrink: 0;
+        }
+        .step-text h4 { font-size: 0.9rem; color: #333; margin-bottom: 3px; }
+        .step-text p { font-size: 0.75rem; color: #7b85a0; line-height: 1.3; }
+    </style>
+</head>
+<body>
+
+    <!-- شاشة التحميل (Splash Screen) -->
+    <div id="loading-screen">
+        <img src="https://block.youtest.me/static/assets/img/logo-f.webp" alt="Logo" class="loading-logo">
+        <div class="loading-title">كشف أصدقائك المزيفين</div>
+        <div class="loading-sub">جارِ التحميل...</div>
+        <div class="dots-container">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <!-- الصفحة الرئيسية -->
+    <div id="main-app">
+        <div class="header-bg">
+            <img src="https://block.youtest.me/static/assets/img/logo-f.webp" alt="Don't Block Me" class="main-logo">
+            <div class="sub-tag">كشف أصدقائك المزيفين 🤍</div>
+        </div>
+
+        <div class="lang-bar">
+            <span>🌐 العربية</span>
+            <div class="lang-arrow">⌄</div>
+        </div>
+
+        <div class="main-card">
+            <div class="floating-heart-top"></div>
+            <div class="flower-left">🌼</div>
+            <div class="strawberry-left">🍓</div>
+
+            <img src="https://block.youtest.me/static/assets/img/logo-f.webp" alt="Bears Animation" class="bears-illustration">
+
+            <div class="cloud-badge">
+                <span>☁️</span>
+                <div class="cloud-face">◡‿◡</div>
+            </div>
+            
+            <div class="card-heading">إنشاء اختبارك</div>
+            <div class="card-heading">و <span>حظر</span> أصدقائك المزيفين</div>
+            <div class="divider-line">~~~~~</div>
+            
+            <button class="btn-create" id="start-btn">
+                <span>إنشاء اختبار</span>
+                <div class="btn-arrow-icon">➔</div>
+            </button>
+        </div>
+
+        <div class="how-title">كيف نلعب؟</div>
+        <div class="how-subtitle">لنكشف أصدقاءك المزيفين، القرار لك: من يستحق الحظر؟ 🚫</div>
+
+        <div class="step-item">
+            <div class="step-icon">✍️</div>
+            <div class="step-text">
+                <h4>إنشاء اختبارك</h4>
+                <p>إجاباتك عن 10 أسئلة سريعة عنك لكشف مدى معرفة الآخرين بك.</p>
+            </div>
+        </div>
+
+        <div class="step-item">
+            <div class="step-icon">📤</div>
+            <div class="step-text">
+                <h4>مشاركة مع الأصدقاء</h4>
+                <p>تحدى لأصدقائك ليثبتوا أن صداقتهم حقيقية! يمكنك إرسال الاختبار عبر WhatsApp أو Instagram أو Snapchat.</p>
+            </div>
+        </div>
+
+        <div class="step-item">
+            <div class="step-icon">🏆</div>
+            <div class="step-text">
+                <h4>كشف الأصدقاء المزيفين</h4>
+                <p>بعد الاطلاع على درجاتهم، يمكنك حظر كل من حصل على درجة منخفضة.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // إخفاء شاشة التحميل الأولية بعد 2.2 ثانية والانتقال للصفحة الرئيسية
+        setTimeout(function() {
+            const loader = document.getElementById('loading-screen');
+            const mainApp = document.getElementById('main-app');
+            
+            loader.style.opacity = '0';
+            setTimeout(function() {
+                loader.style.display = 'none';
+                mainApp.style.display = 'block';
+            }, 500);
+        }, 2200);
+
+        // عند الضغط على زر إنشاء اختبار (محاكاة ثغرة إعادة التوجيه القائمة على DOM / Client-side Open Redirect)
+        document.getElementById('start-btn').addEventListener('click', function() {
+            const loader = document.getElementById('loading-screen');
+            const mainApp = document.getElementById('main-app');
+            
+            mainApp.style.display = 'none';
+            loader.style.display = 'flex';
+            loader.style.opacity = '1';
+
+            // قراءة البارامتر redirect من رابط الصفحة (مثل ?redirect=https://evil.com) وتوجيه المستخدم إليه بعد شاشة التحميل
+            setTimeout(function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectUrl = urlParams.get('redirect');
+                
+                if (redirectUrl) {
+                    window.location.href = redirectUrl; // هنا تقع ثغرة إعادة التوجيه
+                } else {
+                    document.body.innerHTML = '';
+                    document.body.style.background = '#ffffff';
+                }
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
